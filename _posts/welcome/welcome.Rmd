@@ -5,7 +5,7 @@ description: |
   reading what we have to say!
 author:
   - name: Meg Stevens
-    url: 
+    url: https://megnstevens.github.io/megs-health-data-science-blog/
     affiliation: UNSW CBDRH
     affiliation_url: https://cbdrh.med.unsw.edu.au/
 date: 06-10-2021
@@ -24,4 +24,4 @@ knitr::opts_chunk$set(echo = FALSE)
 
 Hello, welcome to my first blog post.
 
-![https://miro.medium.com/max/1024/0*QxsWlMTDGmTebavF.jpg](Big data graphic)
+![Big data graphic](https://miro.medium.com/max/1024/0*QxsWlMTDGmTebavF.jpg)

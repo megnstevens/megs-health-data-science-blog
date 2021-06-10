@@ -6,14 +6,14 @@
       "description": "Some additional details about the blog",
       "author": [],
       "contents": "\nThis is a blog about my health data science projects.\nMeg is excited to learn more about data science and share it with you.\n\n\n\n",
-      "last_modified": "2021-06-10T14:21:05+10:00"
+      "last_modified": "2021-06-10T14:27:34+10:00"
     },
     {
       "path": "index.html",
       "title": "Meg's Health Data Science Blog",
       "author": [],
       "contents": "\n\n\n\n",
-      "last_modified": "2021-06-10T14:21:06+10:00"
+      "last_modified": "2021-06-10T14:27:36+10:00"
     }
   ],
   "collections": ["posts/posts.json"]
