@@ -1,0 +1,13 @@
+---
+title: "About this blog"
+description: |
+  Some additional details about the blog
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = FALSE)
+```
+
+This is a blog about my health data science projects.
+
+Meg is excited to learn more about data science and share it with you.

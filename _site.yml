@@ -1,0 +1,12 @@
+name: "megs-health-data-science-blog"
+title: "Meg's Health Data Science Blog"
+description: |
+  Meg's Health Data Science Blog
+output_dir: "docs"
+navbar:
+  right:
+    - text: "Home"
+      href: index.html
+    - text: "About"
+      href: about.html
+output: distill::distill_article
