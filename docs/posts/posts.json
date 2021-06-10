@@ -1,5 +1,22 @@
 [
   {
+    "path": "posts/2021-06-10-new-blog-post/",
+    "title": "New blog post",
+    "description": "A short description of the post.",
+    "author": [
+      {
+        "name": "Meg Stevens",
+        "url": "https://megnstevens.github.io/megs-health-data-science-blog/"
+      }
+    ],
+    "date": "2021-06-10",
+    "categories": [],
+    "contents": "\nWelcome again, this is a new blog post.\n\n\n\n",
+    "preview": {},
+    "last_modified": "2021-06-10T14:31:48+10:00",
+    "input_file": {}
+  },
+  {
     "path": "posts/welcome/",
     "title": "Welcome to Meg's Health Data Science Blog",
     "description": "Welcome to our new blog. We hope you enjoy \nreading what we have to say!",

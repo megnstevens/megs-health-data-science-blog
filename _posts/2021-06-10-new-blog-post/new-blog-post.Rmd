@@ -1,0 +1,21 @@
+---
+title: "New blog post"
+description: |
+  A short description of the post.
+author:
+  - name: Meg Stevens
+    url: https://megnstevens.github.io/megs-health-data-science-blog/
+date: 06-10-2021
+output:
+  distill::distill_article:
+    self_contained: false
+---
+
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = FALSE)
+```
+
+Welcome again, this is a new blog post.
+
+
