@@ -1,13 +1,17 @@
 ---
 title: "About this blog"
 description: |
-  Some additional details about the blog
+  Some additional details about myself and the blog
 ---
 
 ```{r setup, include=FALSE}
 knitr::opts_chunk$set(echo = FALSE)
 ```
 
-This is a blog about my health data science projects.
+This is a blog to share my health data science projects made using R as I continue to learn more!
 
-Meg is excited to learn more about data science and share it with you.
+I'm a medical doctor currently completing a Master of Science (Health Data Science) at UNSW and hope to work in health data science in the future. The projects on this blog are inspired by some tasks I've completed during my course.
+
+I'm very interested in effective data visualisations, and will use openly-available data to hone these skills.
+
+Feel free to [reach out](mailto:meg.n.stevens@gmail.com) if you have any questions or would like to know more!

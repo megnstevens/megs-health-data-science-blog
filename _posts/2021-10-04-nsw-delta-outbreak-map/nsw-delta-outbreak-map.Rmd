@@ -1,0 +1,173 @@
+---
+title: "NSW Delta Outbreak Map"
+description: |
+  A leaflet heatmap of the COVID-19 cases in the 2021 NSW Delta variant outbreak.
+author:
+  - name: Meg Stevens
+    url: https://megnstevens.github.io/megs-health-data-science-blog/
+date: 10-04-2021
+output:
+  distill::distill_article:
+    self_contained: false
+---
+
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = FALSE)
+
+# Required packages
+library(tidyverse)
+library(leaflet)
+library(sp)
+library(RColorBrewer)
+library(lubridate)
+library(rgdal)
+```
+
+
+```{r, message=FALSE, warning=FALSE, message=FALSE}
+# Load up to date data from NSW government
+cases_by_location <- read_csv('https://data.nsw.gov.au/data/dataset/97ea2424-abaf-4f3e-a9f2-b5c883f42b6a/resource/2776dbb8-f807-4fb2-b1ed-184a6fc2c8aa/download/confirmed_cases_table4_location_likely_source.csv')
+
+# Load spatial data for NSW LGAs (source: https://portal.spatial.nsw.gov.au/portal/home/item.html?id=3e1edb6861524b5490c74db81e42433a)
+lga_polys <- readOGR(dsn = "NSW-LGAs", layer = "LocalGovernmentArea", verbose = FALSE)
+```
+
+### Geographic Distribution of NSW COVID-19 Delta Variant Outbreak (June 2021)
+
+```{r leaflet-setup, message=FALSE}
+## Prepare the data for the leaflet map ##
+
+# Create new dataframe of counts by location of delta variant outbreak
+case_number_by_location <- cases_by_location %>%
+  # Include only locally-acquired cases since beginning of delta variant outbreak (16 Jun 2021)
+  filter(notification_date >= "2021-06-16", 
+         likely_source_of_infection != "Overseas") %>%
+  # Group the summarisation by LGA
+  group_by(lga_name19) %>%
+  # Count number of cases in each LGA
+  summarise(n=n())
+
+# Create new dataframe of most recent case by location of delta variant outbreak
+latest_case_by_location <- cases_by_location %>%
+  # Include only locally-acquired cases since beginning of delta variant outbreak (16 Jun 2021)
+  filter(notification_date >= "2021-06-16", 
+        likely_source_of_infection != "Overseas") %>%
+  # Group the mutation by postcode
+  group_by(lga_name19) %>%
+  # Add new variable for most recent case date for each postcode
+  mutate(most_recent=max(notification_date)) %>%
+  # Only include postcode and most_recent columns
+  select(lga_name19, most_recent) %>% 
+  # Slice out (include) the first row for each group (postcode) to give one observation per postcode 
+  slice(1)
+
+# Merge the case number and most recent case dataframes by postcode
+delta_counts_location_dates <- merge(case_number_by_location, latest_case_by_location, 
+                                     by='lga_name19')
+
+# Modify LGA name formatting to match spatial data
+# Remove text inside brackets at the end of each name (twice, as some names have two sets of brackets)
+delta_counts_location_dates$lga_name19 <- str_replace(delta_counts_location_dates$lga_name19, "\\s*\\([^\\)]+\\)\\s*$", "")
+delta_counts_location_dates$lga_name19 <- str_replace(delta_counts_location_dates$lga_name19, "\\s*\\([^\\)]+\\)\\s*$", "")
+# Change to upper case
+delta_counts_location_dates$lga_name19 <- toupper(delta_counts_location_dates$lga_name19)
+
+# Modify names of unmatched LGAs to match spatial data
+delta_counts_location_dates$lga_name19 <- delta_counts_location_dates$lga_name19 %>%
+  str_replace_all(c("ALBURY" = "ALBURY CITY", 
+                    "LITHGOW" = "LITHGOW CITY",
+                    "NAMBUCCA" = "NAMBUCCA VALLEY", 
+                    "PARRAMATTA" = "CITY OF PARRAMATTA",
+                    "UPPER HUNTER SHIRE" = "UPPER HUNTER",
+                    "WARRUMBUNGLE SHIRE" = "WARRUMBUNGLE"))
+
+# Store the number of cases without a spatial LGA (correctional or missing)
+cases_not_included <- sum(delta_counts_location_dates$n[delta_counts_location_dates$lga_name19 == "CORRECTIONAL SETTINGS" | is.na(delta_counts_location_dates$lga_name19)])
+
+# Remove cases without a spatial LGA from the data for mapping
+delta_counts_location_dates <- delta_counts_location_dates %>%
+  filter(lga_name19 != "CORRECTIONAL SETTINGS") %>%
+  drop_na(lga_name19)
+
+# Subset the spatial data by delta variant case locations
+outbreak_lgas <- lga_polys[lga_polys@data$lganame %in% delta_counts_location_dates$lga_name19,]
+
+# Sort the case data frame in the same order as the spatial data, to ensure matching of labels and polygons on map
+reorder_idx <- match(outbreak_lgas@data$lganame, delta_counts_location_dates$lga_name19)
+delta_counts_location_dates <- delta_counts_location_dates[reorder_idx,]
+
+```
+
+```{r leaflet-create, message=FALSE, fig.height=6, fig.width=9, fig.align='center'}
+## Create the leaflet map ##
+
+# Modify a ColorBrewer palette to limit spectrum included
+palette <- brewer.pal(n=9, "YlOrRd")[c(1,3,4,5,7,9)]
+# Define a binned leaflet colour palette to map the new palette to the number of cases 
+bins <- c(0, 100, 500, 1000, 5000, 10000, Inf)
+pal <- colorBin(palette, delta_counts_location_dates$n, bins = bins)
+
+
+# Define custom labels for each postcode to display number of cases
+mylabels <- paste(
+  "<strong>", outbreak_lgas@data$lganame,"</strong><br/>",
+  "Number of cases: ", delta_counts_location_dates$n, "<br/>",
+  "Most recent case:", format(delta_counts_location_dates$most_recent, "%d %b %Y")
+) %>%
+  lapply(htmltools::HTML)
+
+# Create a map with the spatial data of by delta variant case postcodes
+leaflet(outbreak_lgas) %>% 
+  # Centre the map around these coordinates in Sydney, set zoom level at 10
+  setView(150.991, -33.815, 10) %>% 
+  # Use the default tiles (OpenStreetMap)
+  addTiles() %>% 
+  # Add polygons for the spatial data
+  addPolygons(
+    # Use the custom colour palette and case counts to create a vector of colour to fill the polygons
+    fillColor = ~pal(delta_counts_location_dates$n), 
+    weight = 1.5, # outline weight
+    opacity = 0.4, # outline opacity
+    color = "black", # outline colour
+    dashArray = "3", # outline dash type
+    fillOpacity = 0.5, # polygon fill opacity
+    # Highlight the polygons when moused-over
+    highlight = highlightOptions(
+      weight = 3, # highlighted polygon outline weight
+      color = "#333333", # highlighted polygon outline colour
+      dashArray = "", # highlighted polygon outline dash type (nil)
+      fillOpacity = 0.8, # highlighted polygon fill opacity
+      bringToFront = TRUE), # bring the highlighted polygon to the front to ensure visible
+    # Use the custom labels to appear when polygons moused-over
+    label = mylabels,
+    # Customise label layout / text size
+    labelOptions = labelOptions( 
+      style = list("font-weight" = "normal", padding = "3px 8px"), 
+      textsize = "13px", 
+      direction = "auto")) %>%
+  # Add a legend for the colours and intervals for case numbers
+  addLegend(
+    pal = pal, 
+    values = ~delta_counts_location_dates$n, 
+    opacity = 0.7, # legend opacity
+    title = 'Cases since<br/>16 Jun 2021', # legend title
+    position = "bottomright") %>% # legend position
+  # Add a title panel
+  addControl(
+    # Display the date of the most recent cases included on the map
+    html=paste("<h7> Data from: 16 Jun 2021 to ", 
+               format(max(delta_counts_location_dates$most_recent), "%d %b %Y"), "</h7></br>",
+               "<h8>", cases_not_included, "of ", sum(case_number_by_location$n), 
+               "total cases not included (see note) </h8>"),
+    position='topright') # panel position
+
+```
+
+Note: the LGA of small number of cases is not available. These include recent cases still under investigation, those without a valid LGA (e.g. correctional facilities), as well as cases where the location is suppressed to inhibit identification. 
+
+See further detail about the data at the [NSW Govt Data](https://data.nsw.gov.au/search/dataset/ds-nsw-ckan-97ea2424-abaf-4f3e-a9f2-b5c883f42b6a/details?q=covid%20case%20location) website.
+
+<br>
+
+
