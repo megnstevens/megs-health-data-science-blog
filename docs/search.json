@@ -6,14 +6,14 @@
       "description": "Some additional details about myself and the blog",
       "author": [],
       "contents": "\nThis is a blog to share my health data science projects made using R as I continue to learn more!\nI’m a medical doctor currently completing a Master of Science (Health Data Science) at UNSW and hope to work in health data science in the future. The projects on this blog are inspired by some tasks I’ve completed during my course.\nI’m very interested in effective data visualisations, and will use openly-available data to hone these skills.\nFeel free to reach out if you have any questions or would like to know more!\n\n\n\n",
-      "last_modified": "2021-10-04T17:07:08+11:00"
+      "last_modified": "2021-10-04T18:34:06+11:00"
     },
     {
       "path": "index.html",
       "title": "Meg's Health Data Science Blog",
       "author": [],
       "contents": "\n\n\n\n",
-      "last_modified": "2021-10-04T17:07:10+11:00"
+      "last_modified": "2021-10-04T18:34:08+11:00"
     }
   ],
   "collections": ["posts/posts.json"]
